@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="zh-TW">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>平板簽到系統</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: #e0f2fe;
+      height: 100%;
+      overflow-y: auto;
+    }
+    
+    html {
+      height: 100%;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .title {
+      font-size: 2.5rem;
+      color: #0c4a6e;
+      font-weight: bold;
+      margin-bottom: 0.75rem;
+    }
+    
+    .subtitle {
+      font-size: 1.25rem;
+      color: #0c4a6e;
+      opacity: 0.8;
+    }
+    
+    .main-card {
+      background-color: #ffffff;
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+    }
+    
+    .name-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .name-button {
+      background-color: #64748b;
+      color: #ffffff;
+      font-size: 1.125rem;
+      font-weight: 600;
+      padding: 1.25rem;
+      border-radius: 0.75rem;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+    
+    .name-button:hover:not(:disabled) {
+      transform: scale(1.05);
+      filter: brightness(1.1);
+    }
+    
+    .name-button:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+    
+    .name-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .success-message {
+      display: none;
+      background-color: #ffffff;
+      border: 3px solid #0284c7;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+    
+    .success-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .success-text {
+      font-size: 1.25rem;
+      color: #0284c7;
+      font-weight: bold;
+    }
+    
+    .footer-card {
+      background-color: #ffffff;
+      border-radius: 1rem;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      text-align: center;
+      margin-top: 2rem;
+    }
+    
+    .footer-text {
+      font-size: 1rem;
+      color: #0c4a6e;
+      opacity: 0.7;
+    }
+    
+    .record-count {
+      color: #0284c7;
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container">
+   <header class="header">
+    <h1 class="title" id="main-title">學生簽到系統</h1>
+    <p class="subtitle" id="welcome-text">請點選你的名字完成簽到</p>
+   </header>
+   <main class="main-card">
+    <div class="name-grid" id="name-grid"></div>
+    <div class="success-message" id="success-message">
+     <div class="success-icon">
+      ✅
+     </div>
+     <p class="success-text" id="success-text"></p>
+    </div>
+   </main>
+   <footer class="footer-card">
+    <p class="footer-text">今日簽到人數：<span class="record-count" id="record-count">0</span></p>
+   </footer>
+  </div>
+  <script>
+    const defaultConfig = {
+      background_color: "#e0f2fe",
+      surface_color: "#ffffff",
+      text_color: "#0c4a6e",
+      primary_action_color: "#0284c7",
+      secondary_action_color: "#64748b",
+      font_family: "system-ui",
+      font_size: 16,
+      page_title: "學生簽到系統",
+      welcome_message: "請點選你的名字完成簽到"
+    };
+
+    const studentList = [
+      { number: 1, name: '吳哲賢' },
+      { number: 2, name: '李政穎' },
+      { number: 3, name: '陳竑諶' },
+      { number: 4, name: '柯羿辰' },
+      { number: 5, name: '謝承叡' },
+      { number: 6, name: '王裕睿' },
+      { number: 7, name: '陳秉謙' },
+      { number: 8, name: '軒轅承孺' },
+      { number: 9, name: '林楷倫' },
+      { number: 10, name: '王利帆' },
+      { number: 11, name: '林若妘' },
+      { number: 12, name: '陳語菲' },
+      { number: 13, name: '莊苡琳' },
+      { number: 14, name: '林語紓' },
+      { number: 15, name: '林海薇' },
+      { number: 16, name: '謝宜庭' },
+      { number: 17, name: '賴泇伃' },
+      { number: 18, name: '陳姸蓁' },
+      { number: 19, name: '魏芷翎' },
+      { number: 20, name: '游采璇' }
+    ];
+
+    let records = [];
+    let isSubmitting = false;
+
+    const dataHandler = {
+      onDataChanged(data) {
+        records = data;
+        updateRecordCount();
+      }
+    };
+
+    async function init() {
+      const initResult = await window.dataSdk.init(dataHandler);
+      if (!initResult.isOk) {
+        console.error("Failed to initialize");
+      }
+
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => {
+            applyConfig(config);
+          },
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.background_color || defaultConfig.background_color,
+                set: (value) => {
+                  config.background_color = value;
+                  window.elementSdk.setConfig({ background_color: value });
+                }
+              },
+              {
+                get: () => config.surface_color || defaultConfig.surface_color,
+                set: (value) => {
+                  config.surface_color = value;
+                  window.elementSdk.setConfig({ surface_color: value });
+                }
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => {
+                  config.text_color = value;
+                  window.elementSdk.setConfig({ text_color: value });
+                }
+              },
+              {
+                get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                set: (value) => {
+                  config.primary_action_color = value;
+                  window.elementSdk.setConfig({ primary_action_color: value });
+                }
+              },
+              {
+                get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                set: (value) => {
+                  config.secondary_action_color = value;
+                  window.elementSdk.setConfig({ secondary_action_color: value });
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.font_family || defaultConfig.font_family,
+              set: (value) => {
+                config.font_family = value;
+                window.elementSdk.setConfig({ font_family: value });
+              }
+            },
+            fontSizeable: {
+              get: () => config.font_size || defaultConfig.font_size,
+              set: (value) => {
+                config.font_size = value;
+                window.elementSdk.setConfig({ font_size: value });
+              }
+            }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ["page_title", config.page_title || defaultConfig.page_title],
+            ["welcome_message", config.welcome_message || defaultConfig.welcome_message]
+          ])
+        });
+      }
+
+      createButtons();
+      applyConfig(window.elementSdk?.config || defaultConfig);
+    }
+
+    function applyConfig(config) {
+      document.body.style.backgroundColor = config.background_color || defaultConfig.background_color;
+      document.body.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
+      
+      const title = document.getElementById('main-title');
+      const welcomeText = document.getElementById('welcome-text');
+      
+      title.textContent = config.page_title || defaultConfig.page_title;
+      title.style.color = config.text_color || defaultConfig.text_color;
+      title.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
+      title.style.fontSize = `${(config.font_size || defaultConfig.font_size) * 2.5}px`;
+      
+      welcomeText.textContent = config.welcome_message || defaultConfig.welcome_message;
+      welcomeText.style.color = config.text_color || defaultConfig.text_color;
+      welcomeText.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
+      welcomeText.style.fontSize = `${(config.font_size || defaultConfig.font_size) * 1.25}px`;
+      
+      const buttons = document.querySelectorAll('.name-button');
+      buttons.forEach(btn => {
+        if (!btn.dataset.clicked) {
+          btn.style.backgroundColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+        }
+        btn.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
+        btn.style.fontSize = `${(config.font_size || defaultConfig.font_size) * 1.125}px`;
+      });
+      
+      const mainCards = document.querySelectorAll('.main-card, .footer-card, .success-message');
+      mainCards.forEach(card => {
+        card.style.backgroundColor = config.surface_color || defaultConfig.surface_color;
+      });
+      
+      const successMsg = document.getElementById('success-message');
+      successMsg.style.borderColor = config.primary_action_color || defaultConfig.primary_action_color;
+      
+      const successText = document.getElementById('success-text');
+      successText.style.color = config.primary_action_color || defaultConfig.primary_action_color;
+      successText.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
+      successText.style.fontSize = `${(config.font_size || defaultConfig.font_size) * 1.25}px`;
+      
+      const footerText = document.querySelector('.footer-text');
+      footerText.style.color = config.text_color || defaultConfig.text_color;
+      footerText.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
+      
+      const recordCount = document.getElementById('record-count');
+      recordCount.style.color = config.primary_action_color || defaultConfig.primary_action_color;
+      recordCount.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
+    }
+
+    function createButtons() {
+      const nameGrid = document.getElementById('name-grid');
+      nameGrid.innerHTML = '';
+      
+      studentList.forEach(student => {
+        const button = document.createElement('button');
+        button.className = 'name-button';
+        button.type = 'button';
+        button.textContent = student.number + '號 ' + student.name;
+        button.dataset.studentName = student.name;
+        
+        button.addEventListener('click', async () => {
+          if (isSubmitting) return;
+          
+          if (records.length >= 999) {
+            showMessage('已達簽到上限（999人），請聯繫管理員', '#ef4444');
+            return;
+          }
+          
+          isSubmitting = true;
+          button.disabled = true;
+          const originalText = button.textContent;
+          button.textContent = '簽到中...';
+          
+          const now = new Date();
+          const record = {
+            name: student.name,
+            time: now.toISOString(),
+            date: now.toLocaleDateString('zh-TW')
+          };
+          
+          const result = await window.dataSdk.create(record);
+          
+          const config = window.elementSdk?.config || defaultConfig;
+          const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+          
+          if (result.isOk) {
+            showMessage(`${student.name}，簽到成功！`, primaryColor);
+            button.style.backgroundColor = primaryColor;
+            button.textContent = '✓ 已簽到';
+            button.dataset.clicked = 'true';
+            
+            setTimeout(() => {
+              document.getElementById('success-message').style.display = 'none';
+              button.style.backgroundColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+              button.textContent = originalText;
+              button.disabled = false;
+              delete button.dataset.clicked;
+            }, 2000);
+          } else {
+            showMessage('簽到失敗，請重試', '#ef4444');
+            button.textContent = originalText;
+            button.disabled = false;
+          }
+          
+          isSubmitting = false;
+        });
+        
+        nameGrid.appendChild(button);
+      });
+    }
+
+    function showMessage(message, color) {
+      const successMessage = document.getElementById('success-message');
+      const successText = document.getElementById('success-text');
+      
+      successMessage.style.display = 'block';
+      successMessage.style.borderColor = color;
+      successText.textContent = message;
+      successText.style.color = color;
+      
+      setTimeout(() => {
+        successMessage.style.display = 'none';
+      }, 3000);
+    }
+
+    function updateRecordCount() {
+      const countElement = document.getElementById('record-count');
+      if (countElement) {
+        countElement.textContent = records.length;
+      }
+    }
+
+    init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9afc8486125c7aab',t:'MTc2NjAzODQ0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
