@@ -1,228 +1,240 @@
 <!doctype html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="h-full">
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>平板簽到系統</title>
+  <title>簽到系統</title>
   <script src="/_sdk/data_sdk.js"></script>
   <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, sans-serif;
-      background-color: #e0f2fe;
-      height: 100%;
-      overflow-y: auto;
-    }
-    
-    html {
-      height: 100%;
-    }
-    
-    .container {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-    
-    .header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-    
-    .title {
-      font-size: 2.5rem;
-      color: #0c4a6e;
-      font-weight: bold;
-      margin-bottom: 0.75rem;
-    }
-    
-    .subtitle {
-      font-size: 1.25rem;
-      color: #0c4a6e;
-      opacity: 0.8;
-    }
-    
-    .main-card {
-      background-color: #ffffff;
-      border-radius: 1.5rem;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-      padding: 2rem;
-    }
-    
-    .name-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    
-    .name-button {
-      background-color: #64748b;
-      color: #ffffff;
-      font-size: 1.125rem;
-      font-weight: 600;
-      padding: 1.25rem;
-      border-radius: 0.75rem;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s ease;
-    }
-    
-    .name-button:hover:not(:disabled) {
-      transform: scale(1.05);
-      filter: brightness(1.1);
-    }
-    
-    .name-button:active:not(:disabled) {
-      transform: scale(0.95);
-    }
-    
-    .name-button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    
-    .success-message {
-      display: none;
-      background-color: #ffffff;
-      border: 3px solid #0284c7;
-      border-radius: 1rem;
-      padding: 1.5rem;
-      text-align: center;
-      margin-top: 1.5rem;
-    }
-    
-    .success-icon {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-    }
-    
-    .success-text {
-      font-size: 1.25rem;
-      color: #0284c7;
-      font-weight: bold;
-    }
-    
-    .footer-card {
-      background-color: #ffffff;
-      border-radius: 1rem;
-      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-      padding: 1.5rem;
-      text-align: center;
-      margin-top: 2rem;
-    }
-    
-    .footer-text {
-      font-size: 1rem;
-      color: #0c4a6e;
-      opacity: 0.7;
-    }
-    
-    .record-count {
-      color: #0284c7;
-      font-weight: bold;
-      font-size: 1.5rem;
     }
   </style>
   <style>@view-transition { navigation: auto; }</style>
-  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
  </head>
- <body>
-  <div class="container">
-   <header class="header">
-    <h1 class="title" id="main-title">學生簽到系統</h1>
-    <p class="subtitle" id="welcome-text">請點選你的名字完成簽到</p>
-   </header>
-   <main class="main-card">
-    <div class="name-grid" id="name-grid"></div>
-    <div class="success-message" id="success-message">
-     <div class="success-icon">
-      ✅
+ <body class="h-full">
+  <div id="app" class="h-full w-full overflow-auto">
+   <div class="min-h-full flex flex-col items-center justify-center px-4 py-8" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
+     <h1 id="pageTitle" class="text-4xl font-bold text-center mb-2" style="color: #667eea;">簽到系統</h1>
+     <p id="welcomeMessage" class="text-center text-gray-600 mb-8">請輸入您的姓名進行簽到</p>
+     <form id="checkInForm" class="mb-8"><label for="nameInput" class="block text-sm font-medium text-gray-700 mb-2">姓名</label> <input type="text" id="nameInput" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-colors mb-4" placeholder="請輸入您的姓名" required> <button type="submit" id="checkInButton" class="w-full py-3 rounded-lg font-semibold text-white transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" style="background-color: #667eea;"> <span id="buttonText">立即簽到</span> </button>
+     </form>
+     <div id="successMessage" class="hidden mb-6 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
+      <p class="font-semibold">✓ 簽到成功！</p>
      </div>
-     <p class="success-text" id="success-text"></p>
+     <div id="recordsSection">
+      <h2 class="text-xl font-bold mb-4" style="color: #667eea;">簽到記錄</h2>
+      <div id="recordsList" class="space-y-2 max-h-64 overflow-y-auto">
+       <p class="text-gray-500 text-center py-4">尚無簽到記錄</p>
+      </div>
+      <div id="recordCount" class="text-sm text-gray-600 mt-3 text-center">
+       總計：0 次簽到
+      </div>
+     </div>
     </div>
-   </main>
-   <footer class="footer-card">
-    <p class="footer-text">今日簽到人數：<span class="record-count" id="record-count">0</span></p>
-   </footer>
+   </div>
   </div>
   <script>
     const defaultConfig = {
-      background_color: "#e0f2fe",
-      surface_color: "#ffffff",
-      text_color: "#0c4a6e",
-      primary_action_color: "#0284c7",
-      secondary_action_color: "#64748b",
-      font_family: "system-ui",
-      font_size: 16,
-      page_title: "學生簽到系統",
-      welcome_message: "請點選你的名字完成簽到"
+      page_title: '簽到系統',
+      welcome_message: '請輸入您的姓名進行簽到',
+      button_text: '立即簽到',
+      primary_color: '#667eea',
+      background_gradient_start: '#667eea',
+      background_gradient_end: '#764ba2',
+      text_color: '#374151',
+      font_family: 'system-ui, -apple-system, sans-serif',
+      font_size: 16
     };
-
-    const studentList = [
-      { number: 1, name: '吳哲賢' },
-      { number: 2, name: '李政穎' },
-      { number: 3, name: '陳竑諶' },
-      { number: 4, name: '柯羿辰' },
-      { number: 5, name: '謝承叡' },
-      { number: 6, name: '王裕睿' },
-      { number: 7, name: '陳秉謙' },
-      { number: 8, name: '軒轅承孺' },
-      { number: 9, name: '林楷倫' },
-      { number: 10, name: '王利帆' },
-      { number: 11, name: '林若妘' },
-      { number: 12, name: '陳語菲' },
-      { number: 13, name: '莊苡琳' },
-      { number: 14, name: '林語紓' },
-      { number: 15, name: '林海薇' },
-      { number: 16, name: '謝宜庭' },
-      { number: 17, name: '賴泇伃' },
-      { number: 18, name: '陳姸蓁' },
-      { number: 19, name: '魏芷翎' },
-      { number: 20, name: '游采璇' }
-    ];
 
     let records = [];
     let isSubmitting = false;
 
     const dataHandler = {
       onDataChanged(data) {
-        records = data;
-        updateRecordCount();
+        records = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        renderRecords();
       }
     };
 
+    async function onConfigChange(config) {
+      const pageTitle = document.getElementById('pageTitle');
+      const welcomeMessage = document.getElementById('welcomeMessage');
+      const buttonTextElement = document.getElementById('buttonText');
+      const checkInButton = document.getElementById('checkInButton');
+      const headings = document.querySelectorAll('h1, h2');
+      
+      const title = config.page_title || defaultConfig.page_title;
+      const welcome = config.welcome_message || defaultConfig.welcome_message;
+      const btnText = config.button_text || defaultConfig.button_text;
+      const primaryColor = config.primary_color || defaultConfig.primary_color;
+      const bgStart = config.background_gradient_start || defaultConfig.background_gradient_start;
+      const bgEnd = config.background_gradient_end || defaultConfig.background_gradient_end;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const fontFamily = config.font_family || defaultConfig.font_family;
+      const fontSize = config.font_size || defaultConfig.font_size;
+
+      pageTitle.textContent = title;
+      welcomeMessage.textContent = welcome;
+      buttonTextElement.textContent = btnText;
+      
+      pageTitle.style.color = primaryColor;
+      document.querySelectorAll('h2').forEach(h2 => h2.style.color = primaryColor);
+      checkInButton.style.backgroundColor = primaryColor;
+      
+      const appDiv = document.querySelector('#app > div');
+      appDiv.style.background = `linear-gradient(135deg, ${bgStart} 0%, ${bgEnd} 100%)`;
+      
+      document.body.style.color = textColor;
+      
+      pageTitle.style.fontFamily = `${fontFamily}, system-ui, -apple-system, sans-serif`;
+      welcomeMessage.style.fontFamily = `${fontFamily}, system-ui, -apple-system, sans-serif`;
+      buttonTextElement.style.fontFamily = `${fontFamily}, system-ui, -apple-system, sans-serif`;
+      
+      pageTitle.style.fontSize = `${fontSize * 2.5}px`;
+      welcomeMessage.style.fontSize = `${fontSize}px`;
+      buttonTextElement.style.fontSize = `${fontSize * 1.125}px`;
+      document.querySelectorAll('h2').forEach(h2 => h2.style.fontSize = `${fontSize * 1.5}px`);
+    }
+
+    function renderRecords() {
+      const recordsList = document.getElementById('recordsList');
+      const recordCount = document.getElementById('recordCount');
+      
+      if (records.length === 0) {
+        recordsList.innerHTML = '<p class="text-gray-500 text-center py-4">尚無簽到記錄</p>';
+        recordCount.textContent = '總計：0 次簽到';
+        return;
+      }
+
+      recordsList.innerHTML = records.map(record => `
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+          <div class="flex-1">
+            <p class="font-semibold text-gray-800">${escapeHtml(record.name)}</p>
+            <p class="text-sm text-gray-600">${record.date} ${record.time}</p>
+          </div>
+          <button 
+            onclick="deleteRecord('${record.__backendId}')" 
+            class="text-red-500 hover:text-red-700 transition-colors px-3 py-1 rounded hover:bg-red-50"
+            aria-label="刪除記錄"
+          >
+            ✕
+          </button>
+        </div>
+      `).join('');
+      
+      recordCount.textContent = `總計：${records.length} 次簽到`;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function deleteRecord(backendId) {
+      const record = records.find(r => r.__backendId === backendId);
+      if (!record) return;
+
+      const result = await window.dataSdk.delete(record);
+      if (!result.isOk) {
+        showMessage('刪除失敗，請稍後再試', false);
+      }
+    }
+
+    function showMessage(message, isSuccess = true) {
+      const successMessage = document.getElementById('successMessage');
+      const messageText = successMessage.querySelector('p');
+      
+      messageText.textContent = isSuccess ? `✓ ${message}` : `✗ ${message}`;
+      successMessage.className = isSuccess 
+        ? 'mb-6 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded'
+        : 'mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded';
+      
+      successMessage.classList.remove('hidden');
+      
+      setTimeout(() => {
+        successMessage.classList.add('hidden');
+      }, 3000);
+    }
+
+    document.getElementById('checkInForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (isSubmitting) return;
+      
+      if (records.length >= 999) {
+        showMessage('已達到最大記錄數量限制（999筆），請先刪除一些記錄', false);
+        return;
+      }
+
+      const nameInput = document.getElementById('nameInput');
+      const name = nameInput.value.trim();
+      const checkInButton = document.getElementById('checkInButton');
+      
+      if (!name) return;
+
+      isSubmitting = true;
+      checkInButton.disabled = true;
+      document.getElementById('buttonText').textContent = '簽到中...';
+
+      const now = new Date();
+      const record = {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: name,
+        timestamp: now.toISOString(),
+        date: now.toLocaleDateString('zh-TW'),
+        time: now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+      };
+
+      const result = await window.dataSdk.create(record);
+      
+      isSubmitting = false;
+      checkInButton.disabled = false;
+      document.getElementById('buttonText').textContent = window.elementSdk?.config?.button_text || defaultConfig.button_text;
+
+      if (result.isOk) {
+        nameInput.value = '';
+        showMessage('簽到成功！');
+      } else {
+        showMessage('簽到失敗，請稍後再試', false);
+      }
+    });
+
     async function init() {
-      const initResult = await window.dataSdk.init(dataHandler);
-      if (!initResult.isOk) {
-        console.error("Failed to initialize");
+      const dataResult = await window.dataSdk.init(dataHandler);
+      if (!dataResult.isOk) {
+        console.error('資料 SDK 初始化失敗');
       }
 
       if (window.elementSdk) {
         window.elementSdk.init({
           defaultConfig,
-          onConfigChange: async (config) => {
-            applyConfig(config);
-          },
+          onConfigChange,
           mapToCapabilities: (config) => ({
             recolorables: [
               {
-                get: () => config.background_color || defaultConfig.background_color,
+                get: () => config.primary_color || defaultConfig.primary_color,
                 set: (value) => {
-                  config.background_color = value;
-                  window.elementSdk.setConfig({ background_color: value });
+                  config.primary_color = value;
+                  window.elementSdk.setConfig({ primary_color: value });
                 }
               },
               {
-                get: () => config.surface_color || defaultConfig.surface_color,
+                get: () => config.background_gradient_start || defaultConfig.background_gradient_start,
                 set: (value) => {
-                  config.surface_color = value;
-                  window.elementSdk.setConfig({ surface_color: value });
+                  config.background_gradient_start = value;
+                  window.elementSdk.setConfig({ background_gradient_start: value });
+                }
+              },
+              {
+                get: () => config.background_gradient_end || defaultConfig.background_gradient_end,
+                set: (value) => {
+                  config.background_gradient_end = value;
+                  window.elementSdk.setConfig({ background_gradient_end: value });
                 }
               },
               {
@@ -230,20 +242,6 @@
                 set: (value) => {
                   config.text_color = value;
                   window.elementSdk.setConfig({ text_color: value });
-                }
-              },
-              {
-                get: () => config.primary_action_color || defaultConfig.primary_action_color,
-                set: (value) => {
-                  config.primary_action_color = value;
-                  window.elementSdk.setConfig({ primary_action_color: value });
-                }
-              },
-              {
-                get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
-                set: (value) => {
-                  config.secondary_action_color = value;
-                  window.elementSdk.setConfig({ secondary_action_color: value });
                 }
               }
             ],
@@ -264,148 +262,17 @@
             }
           }),
           mapToEditPanelValues: (config) => new Map([
-            ["page_title", config.page_title || defaultConfig.page_title],
-            ["welcome_message", config.welcome_message || defaultConfig.welcome_message]
+            ['page_title', config.page_title || defaultConfig.page_title],
+            ['welcome_message', config.welcome_message || defaultConfig.welcome_message],
+            ['button_text', config.button_text || defaultConfig.button_text]
           ])
         });
       }
 
-      createButtons();
-      applyConfig(window.elementSdk?.config || defaultConfig);
-    }
-
-    function applyConfig(config) {
-      document.body.style.backgroundColor = config.background_color || defaultConfig.background_color;
-      document.body.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
-      
-      const title = document.getElementById('main-title');
-      const welcomeText = document.getElementById('welcome-text');
-      
-      title.textContent = config.page_title || defaultConfig.page_title;
-      title.style.color = config.text_color || defaultConfig.text_color;
-      title.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
-      title.style.fontSize = `${(config.font_size || defaultConfig.font_size) * 2.5}px`;
-      
-      welcomeText.textContent = config.welcome_message || defaultConfig.welcome_message;
-      welcomeText.style.color = config.text_color || defaultConfig.text_color;
-      welcomeText.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
-      welcomeText.style.fontSize = `${(config.font_size || defaultConfig.font_size) * 1.25}px`;
-      
-      const buttons = document.querySelectorAll('.name-button');
-      buttons.forEach(btn => {
-        if (!btn.dataset.clicked) {
-          btn.style.backgroundColor = config.secondary_action_color || defaultConfig.secondary_action_color;
-        }
-        btn.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
-        btn.style.fontSize = `${(config.font_size || defaultConfig.font_size) * 1.125}px`;
-      });
-      
-      const mainCards = document.querySelectorAll('.main-card, .footer-card, .success-message');
-      mainCards.forEach(card => {
-        card.style.backgroundColor = config.surface_color || defaultConfig.surface_color;
-      });
-      
-      const successMsg = document.getElementById('success-message');
-      successMsg.style.borderColor = config.primary_action_color || defaultConfig.primary_action_color;
-      
-      const successText = document.getElementById('success-text');
-      successText.style.color = config.primary_action_color || defaultConfig.primary_action_color;
-      successText.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
-      successText.style.fontSize = `${(config.font_size || defaultConfig.font_size) * 1.25}px`;
-      
-      const footerText = document.querySelector('.footer-text');
-      footerText.style.color = config.text_color || defaultConfig.text_color;
-      footerText.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
-      
-      const recordCount = document.getElementById('record-count');
-      recordCount.style.color = config.primary_action_color || defaultConfig.primary_action_color;
-      recordCount.style.fontFamily = `${config.font_family || defaultConfig.font_family}, system-ui, sans-serif`;
-    }
-
-    function createButtons() {
-      const nameGrid = document.getElementById('name-grid');
-      nameGrid.innerHTML = '';
-      
-      studentList.forEach(student => {
-        const button = document.createElement('button');
-        button.className = 'name-button';
-        button.type = 'button';
-        button.textContent = student.number + '號 ' + student.name;
-        button.dataset.studentName = student.name;
-        
-        button.addEventListener('click', async () => {
-          if (isSubmitting) return;
-          
-          if (records.length >= 999) {
-            showMessage('已達簽到上限（999人），請聯繫管理員', '#ef4444');
-            return;
-          }
-          
-          isSubmitting = true;
-          button.disabled = true;
-          const originalText = button.textContent;
-          button.textContent = '簽到中...';
-          
-          const now = new Date();
-          const record = {
-            name: student.name,
-            time: now.toISOString(),
-            date: now.toLocaleDateString('zh-TW')
-          };
-          
-          const result = await window.dataSdk.create(record);
-          
-          const config = window.elementSdk?.config || defaultConfig;
-          const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
-          
-          if (result.isOk) {
-            showMessage(`${student.name}，簽到成功！`, primaryColor);
-            button.style.backgroundColor = primaryColor;
-            button.textContent = '✓ 已簽到';
-            button.dataset.clicked = 'true';
-            
-            setTimeout(() => {
-              document.getElementById('success-message').style.display = 'none';
-              button.style.backgroundColor = config.secondary_action_color || defaultConfig.secondary_action_color;
-              button.textContent = originalText;
-              button.disabled = false;
-              delete button.dataset.clicked;
-            }, 2000);
-          } else {
-            showMessage('簽到失敗，請重試', '#ef4444');
-            button.textContent = originalText;
-            button.disabled = false;
-          }
-          
-          isSubmitting = false;
-        });
-        
-        nameGrid.appendChild(button);
-      });
-    }
-
-    function showMessage(message, color) {
-      const successMessage = document.getElementById('success-message');
-      const successText = document.getElementById('success-text');
-      
-      successMessage.style.display = 'block';
-      successMessage.style.borderColor = color;
-      successText.textContent = message;
-      successText.style.color = color;
-      
-      setTimeout(() => {
-        successMessage.style.display = 'none';
-      }, 3000);
-    }
-
-    function updateRecordCount() {
-      const countElement = document.getElementById('record-count');
-      if (countElement) {
-        countElement.textContent = records.length;
-      }
+      await onConfigChange(window.elementSdk?.config || defaultConfig);
     }
 
     init();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9afc8486125c7aab',t:'MTc2NjAzODQ0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9afc8d1f62868451',t:'MTc2NjAzODc5NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
